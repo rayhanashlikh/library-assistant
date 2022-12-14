@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "535368845365",
+    "firebase_url": "https://tugasakhirppb-6134c-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "tugasakhirppb-6134c",
+    "storage_bucket": "tugasakhirppb-6134c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:535368845365:android:e08200bd507768eb79897c",
+        "android_client_info": {
+          "package_name": "com.example.libraryassistant"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "535368845365-05vmo3r30uvka0tl7hc3tpd40n00i86c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwgYt7CF_5MAHOjgajvezKZr7t-Ka10JQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "535368845365-05vmo3r30uvka0tl7hc3tpd40n00i86c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
