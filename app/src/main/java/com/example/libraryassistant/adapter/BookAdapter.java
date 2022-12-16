@@ -1,6 +1,7 @@
 package com.example.libraryassistant.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.libraryassistant.R;
+import com.example.libraryassistant.UpdateBookActivity;
 import com.example.libraryassistant.apiclient.Book;
 import com.squareup.picasso.Picasso;
 
@@ -39,16 +41,26 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Book book = listBook.get(position);
         holder.txtJudul.setText(book.getTitle());
-        holder.txtAuthor.setText(book.getAuthor());
+        holder.txtAuthor.setText("Author : " + book.getAuthor());
         holder.txtDesc.setText(book.getDescription());
 
         String sub_url = book.getImage().substring(22, 62);
         Log.i("test: ", sub_url);
-        String url = "https://5426-36-73-1-19.ap.ngrok.io/" + sub_url;
+        String url = "https://e4a7-36-73-1-19.ap.ngrok.io/" + sub_url;
 
         Picasso.get()
                 .load(url)
                 .into(holder.imgFoto);
+
+        holder.itemLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Context context = holder.itemLayout.getContext();
+                Intent it = new Intent(context, UpdateBookActivity.class);
+//                it.putExtra("current_book", book);
+                context.startActivity(it);
+            }
+        });
     }
 
     @Override
@@ -67,6 +79,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
             txtJudul = itemView.findViewById(R.id.txt_judul);
             txtAuthor = itemView.findViewById(R.id.txt_author);
             txtDesc = itemView.findViewById(R.id.txt_desc);
+            itemLayout = itemView.findViewById(R.id.book_item);
         }
     }
 }
