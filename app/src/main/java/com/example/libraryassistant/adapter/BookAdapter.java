@@ -46,7 +46,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 
         String sub_url = book.getImage().substring(22, 62);
         Log.i("test: ", sub_url);
-        String url = "https://e4a7-36-73-1-19.ap.ngrok.io/" + sub_url;
+        String url = "https://8d7e-66-96-233-153.ap.ngrok.io/" + sub_url;
 
         Picasso.get()
                 .load(url)
@@ -57,7 +57,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
             public void onClick(View view) {
                 Context context = holder.itemLayout.getContext();
                 Intent it = new Intent(context, UpdateBookActivity.class);
-//                it.putExtra("current_book", book);
+                it.putExtra("current_book", book);
                 context.startActivity(it);
             }
         });

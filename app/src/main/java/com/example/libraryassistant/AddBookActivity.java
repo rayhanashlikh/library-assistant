@@ -5,18 +5,13 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.MediaStore;
-import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,11 +37,11 @@ public class AddBookActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_book);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar_home);
+        toolbar = findViewById(R.id.toolbar_home);
         toolbar.setTitle("Tambah Buku");
-        mAuth = FirebaseAuth.getInstance();
-
         setSupportActionBar(toolbar);
+
+        mAuth = FirebaseAuth.getInstance();
 
         edtPublishedAt = findViewById(R.id.edt_published_at);
         edtImage = findViewById(R.id.edt_image);
@@ -89,6 +84,7 @@ public class AddBookActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
                         // Save disini
+                        createBook();
                         Intent intent = new Intent(AddBookActivity.this, HomeActivity.class);
                         startActivity(intent);
                     }
@@ -105,8 +101,7 @@ public class AddBookActivity extends AppCompatActivity {
         btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(AddBookActivity.this, HomeActivity.class);
-                startActivity(intent);
+                finish();
             }
         });
     }
@@ -146,7 +141,7 @@ public class AddBookActivity extends AppCompatActivity {
                 }
             });
 
-    void createBook() {
+    private void createBook() {
 
     }
 }
