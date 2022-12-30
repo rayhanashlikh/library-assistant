@@ -246,7 +246,7 @@ public class UpdateBookActivity extends AppCompatActivity {
             });
         } else {
             Call<Book> call = bookInterface.updateBookWithImage(book.getId(),
-                    authorBody, titleBody, isbnBody, publisherBody, publishedAtBody, descriptionBody, image);
+                    titleBody, authorBody, isbnBody, publisherBody, publishedAtBody, descriptionBody, image);
             call.enqueue(new Callback<Book>() {
                 @Override
                 public void onResponse(Call<Book> call, Response<Book> response) {
