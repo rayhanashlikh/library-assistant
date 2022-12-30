@@ -20,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.libraryassistant.apiclient.ApiClient;
 import com.example.libraryassistant.apiclient.Book;
 import com.example.libraryassistant.apiclient.BookInterface;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,7 +29,6 @@ import com.google.firebase.auth.FirebaseUser;
 import java.io.File;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -49,6 +49,7 @@ public class AddBookActivity extends AppCompatActivity {
     private ImageView imgPrev;
     private MultipartBody.Part image;
     private BookInterface bookInterface;
+    private boolean isAllFieldValid = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +61,7 @@ public class AddBookActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         mAuth = FirebaseAuth.getInstance();
+        bookInterface = ApiClient.getClient().create(BookInterface.class);
 
         edtTitle = findViewById(R.id.edt_title);
         edtAuthor = findViewById(R.id.edt_author);
@@ -111,6 +113,7 @@ public class AddBookActivity extends AppCompatActivity {
                         dialogInterface.dismiss();
                         // Save disini
                         createBook();
+
                     }
                 });
                 builder.setNegativeButton("Batalkan", new DialogInterface.OnClickListener() {
@@ -183,6 +186,45 @@ public class AddBookActivity extends AppCompatActivity {
         }
     }
 
+    private boolean checkAllFields(){
+        if (edtTitle.getText().toString().isEmpty()){
+            edtTitle.setError("Judul tidak boleh kosong");
+            return false;
+        }
+
+        if (edtAuthor.getText().toString().isEmpty()){
+            edtAuthor.setError("Penulis tidak boleh kosong");
+            return false;
+        }
+
+        if (edtIsbn.getText().toString().isEmpty()){
+            edtIsbn.setError("ISBN tidak boleh kosong");
+            return false;
+        }
+
+        if (edtPublisher.getText().toString().isEmpty()){
+            edtPublisher.setError("Penerbit tidak boleh kosong");
+            return false;
+        }
+
+        if (edtPublishedAt.getText().toString().isEmpty()){
+            edtPublishedAt.setError("Tanggal terbit tidak boleh kosong");
+            return false;
+        }
+
+        if (edtDescription.getText().toString().isEmpty()){
+            edtDescription.setError("Deskripsi tidak boleh kosong");
+            return false;
+        }
+
+        if (edtImage.getText().toString().isEmpty()){
+            edtImage.setError("Gambar tidak boleh kosong");
+            return false;
+        }
+
+        return true;
+    }
+
     private void createBook() {
         String title = ((EditText) findViewById(R.id.edt_title)).getText().toString();
         String author = ((EditText) findViewById(R.id.edt_author)).getText().toString();
@@ -190,16 +232,6 @@ public class AddBookActivity extends AppCompatActivity {
         String publisher = ((EditText) findViewById(R.id.edt_publisher)).getText().toString();
         String publishedAt = ((EditText) findViewById(R.id.edt_published_at)).getText().toString();
         String description = ((EditText) findViewById(R.id.edt_description)).getText().toString();
-
-        ArrayList<String> test_val = new ArrayList<>();
-        test_val.add(title);
-        test_val.add(author);
-        test_val.add(isbn);
-        test_val.add(publisher);
-        test_val.add(publishedAt);
-        test_val.add(description);
-
-        Log.d("test_val", test_val.toString());
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         Date publishedDate = format.parse(publishedAt, new ParsePosition(0));
@@ -220,23 +252,28 @@ public class AddBookActivity extends AppCompatActivity {
         RequestBody publishedAtBody = RequestBody.create(MediaType.parse("text/plain"), publishedAt);
         RequestBody descriptionBody = RequestBody.create(MediaType.parse("text/plain"), description);
 
-        Call<Book> call = bookInterface.postBook(authorBody, titleBody, isbnBody, publisherBody, publishedAtBody, descriptionBody, image);
-        call.enqueue(new Callback<Book>() {
-            @Override
-            public void onResponse(Call<Book> call, Response<Book> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(AddBookActivity.this, "Data berhasil ditambahkan", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(AddBookActivity.this, "Data gagal ditambahkan", Toast.LENGTH_SHORT).show();
-                    Log.e("Error", response.message());
-                }
-            }
+        isAllFieldValid = checkAllFields();
 
-            @Override
-            public void onFailure(Call<Book> call, Throwable t) {
-                Toast.makeText(AddBookActivity.this, "Data gagal ditambahkan", Toast.LENGTH_SHORT).show();
-                Log.e("Error", t.getMessage());
-            }
-        });
+        if (isAllFieldValid) {
+            Call<Book> call = bookInterface.postBook(titleBody, authorBody, isbnBody, publisherBody, publishedAtBody, descriptionBody, image);
+            call.enqueue(new Callback<Book>() {
+                @Override
+                public void onResponse(Call<Book> call, Response<Book> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(AddBookActivity.this, "Data berhasil ditambahkan", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(AddBookActivity.this, "Data gagal ditambahkan", Toast.LENGTH_SHORT).show();
+                        Log.e("Error", response.message());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Book> call, Throwable t) {
+                    Toast.makeText(AddBookActivity.this, "Data gagal ditambahkan", Toast.LENGTH_SHORT).show();
+                    Log.e("Error", t.getMessage());
+                }
+            });
+        }
     }
 }

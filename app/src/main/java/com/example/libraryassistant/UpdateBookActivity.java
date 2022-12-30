@@ -31,14 +31,10 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -56,6 +52,7 @@ public class UpdateBookActivity extends AppCompatActivity {
     private BookInterface bookInterface;
     private MultipartBody.Part image;
     public static final String URL_ORIGIN = "https://7ab0-66-96-233-161.ap.ngrok.io/";
+    private boolean isAllFieldValid = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +93,6 @@ public class UpdateBookActivity extends AppCompatActivity {
         edtPublishedAt.setText(sdf.format(book.getPublished_at()));
 
         String sub_url = book.getImage().substring(22, 62);
-        Log.i("test: ", sub_url);
         String url = URL_ORIGIN + sub_url;
 
         Picasso.get()
@@ -225,46 +221,49 @@ public class UpdateBookActivity extends AppCompatActivity {
         RequestBody publishedAtBody = RequestBody.create(MediaType.parse("text/plain"), publishedAt);
         RequestBody descriptionBody = RequestBody.create(MediaType.parse("text/plain"), description);
 
-        if (image == null) {
-            Call<Book> call = bookInterface.updateBook(book.getId(), title, author, isbn, publisher, publishedAt, description);
-            call.enqueue(new Callback<Book>() {
-                @Override
-                public void onResponse(Call<Book> call, Response<Book> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(UpdateBookActivity.this, "Book updated successfully", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(UpdateBookActivity.this, "Book updated failed", Toast.LENGTH_SHORT).show();
+        isAllFieldValid = checkAllFields();
+        if (isAllFieldValid) {
+            if (image == null) {
+                Call<Book> call = bookInterface.updateBook(book.getId(), title, author, isbn, publisher, publishedAt, description);
+                call.enqueue(new Callback<Book>() {
+                    @Override
+                    public void onResponse(Call<Book> call, Response<Book> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(UpdateBookActivity.this, "Book updated successfully", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else {
+                            Toast.makeText(UpdateBookActivity.this, "Book updated failed", Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
 
-                @Override
-                public void onFailure(Call<Book> call, Throwable t) {
-                    Toast.makeText(UpdateBookActivity.this, "Book updated error", Toast.LENGTH_SHORT).show();
-                    Log.e("Error: ", t.getMessage());
-                }
-            });
-        } else {
-            Call<Book> call = bookInterface.updateBookWithImage(book.getId(),
-                    titleBody, authorBody, isbnBody, publisherBody, publishedAtBody, descriptionBody, image);
-            call.enqueue(new Callback<Book>() {
-                @Override
-                public void onResponse(Call<Book> call, Response<Book> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(UpdateBookActivity.this, "Book updated successfully", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(UpdateBookActivity.this, "Book update failed", Toast.LENGTH_SHORT).show();
-                        Log.e("test", "onResponse: " + response.errorBody());
+                    @Override
+                    public void onFailure(Call<Book> call, Throwable t) {
+                        Toast.makeText(UpdateBookActivity.this, "Book updated error", Toast.LENGTH_SHORT).show();
+                        Log.e("Error: ", t.getMessage());
                     }
-                }
+                });
+            } else {
+                Call<Book> call = bookInterface.updateBookWithImage(book.getId(),
+                        titleBody, authorBody, isbnBody, publisherBody, publishedAtBody, descriptionBody, image);
+                call.enqueue(new Callback<Book>() {
+                    @Override
+                    public void onResponse(Call<Book> call, Response<Book> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(UpdateBookActivity.this, "Book updated successfully", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else {
+                            Toast.makeText(UpdateBookActivity.this, "Book update failed", Toast.LENGTH_SHORT).show();
+                            Log.e("test", "onResponse: " + response.errorBody());
+                        }
+                    }
 
-                @Override
-                public void onFailure(Call<Book> call, Throwable t) {
-                    Toast.makeText(UpdateBookActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-                    Log.e("Error: ", t.getMessage());
-                }
-            });
+                    @Override
+                    public void onFailure(Call<Book> call, Throwable t) {
+                        Toast.makeText(UpdateBookActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e("Error: ", t.getMessage());
+                    }
+                });
+            }
         }
     }
 
@@ -322,5 +321,39 @@ public class UpdateBookActivity extends AppCompatActivity {
             }
         });
         builder.show();
+    }
+
+    private boolean checkAllFields(){
+        if (edtTitle.getText().toString().isEmpty()){
+            edtTitle.setError("Judul tidak boleh kosong");
+            return false;
+        }
+
+        if (edtAuthor.getText().toString().isEmpty()){
+            edtAuthor.setError("Penulis tidak boleh kosong");
+            return false;
+        }
+
+        if (edtIsbn.getText().toString().isEmpty()){
+            edtIsbn.setError("ISBN tidak boleh kosong");
+            return false;
+        }
+
+        if (edtPublisher.getText().toString().isEmpty()){
+            edtPublisher.setError("Penerbit tidak boleh kosong");
+            return false;
+        }
+
+        if (edtPublishedAt.getText().toString().isEmpty()){
+            edtPublishedAt.setError("Tanggal terbit tidak boleh kosong");
+            return false;
+        }
+
+        if (edtDescription.getText().toString().isEmpty()){
+            edtDescription.setError("Deskripsi tidak boleh kosong");
+            return false;
+        }
+
+        return true;
     }
 }

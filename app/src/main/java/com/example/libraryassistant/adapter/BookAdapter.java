@@ -2,7 +2,6 @@ package com.example.libraryassistant.adapter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +22,7 @@ import java.util.ArrayList;
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 
     ArrayList<Book> listBook;
+    private final String URL_ORIGIN = "https://7ab0-66-96-233-161.ap.ngrok.io/";
 
     public BookAdapter(ArrayList<Book> listBook) {
         this.listBook = listBook;
@@ -45,8 +45,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         holder.txtDesc.setText(book.getDescription());
 
         String sub_url = book.getImage().substring(22, 62);
-        Log.i("test: ", sub_url);
-        String url = "https://7ab0-66-96-233-161.ap.ngrok.io/" + sub_url;
+        String url = URL_ORIGIN + sub_url;
 
         Picasso.get()
                 .load(url)
