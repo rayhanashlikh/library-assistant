@@ -46,7 +46,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 
         String sub_url = book.getImage().substring(22, 62);
         Log.i("test: ", sub_url);
-        String url = "https://8d7e-66-96-233-153.ap.ngrok.io/" + sub_url;
+        String url = "https://7ab0-66-96-233-161.ap.ngrok.io/" + sub_url;
 
         Picasso.get()
                 .load(url)

@@ -9,28 +9,46 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.example.libraryassistant.apiclient.Book;
+import com.example.libraryassistant.apiclient.BookInterface;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.io.File;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+
+import retrofit2.Call;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AddBookActivity extends AppCompatActivity {
 
-    Toolbar toolbar;
-    FirebaseAuth mAuth;
+    private Toolbar toolbar;
+    private FirebaseAuth mAuth;
     final Calendar myCalendar = Calendar.getInstance();
-    EditText edtPublishedAt, edtImage;
-    Button btnSave, btnClose;
-    ImageView imgPrev;
+    private EditText edtTitle, edtAuthor, edtIsbn, edtPublisher, edtPublishedAt, edtDescription, edtImage;
+    private Button btnSave, btnClose;
+    private ImageView imgPrev;
+    private MultipartBody.Part image;
+    private BookInterface bookInterface;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +60,14 @@ public class AddBookActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         mAuth = FirebaseAuth.getInstance();
+
+        edtTitle = findViewById(R.id.edt_title);
+        edtAuthor = findViewById(R.id.edt_author);
+        edtIsbn = findViewById(R.id.edt_isbn);
+        edtPublisher = findViewById(R.id.edt_publisher);
+        edtPublishedAt = findViewById(R.id.edt_published_at);
+        edtDescription = findViewById(R.id.edt_description);
+        edtImage = findViewById(R.id.edt_image);
 
         edtPublishedAt = findViewById(R.id.edt_published_at);
         edtImage = findViewById(R.id.edt_image);
@@ -85,8 +111,6 @@ public class AddBookActivity extends AppCompatActivity {
                         dialogInterface.dismiss();
                         // Save disini
                         createBook();
-                        Intent intent = new Intent(AddBookActivity.this, HomeActivity.class);
-                        startActivity(intent);
                     }
                 });
                 builder.setNegativeButton("Batalkan", new DialogInterface.OnClickListener() {
@@ -134,14 +158,85 @@ public class AddBookActivity extends AppCompatActivity {
                     // There are no request codes
                     Intent data = result.getData();
                     Uri uri = data.getData();
+                    String filePath = getRealPathFromURIPath(uri);
                     String name = uri.getLastPathSegment();
                     name = name.substring(name.lastIndexOf(File.separator) + 1);
                     edtImage.setText(name);
                     imgPrev.setImageURI(uri);
+
+                    File file = new File(filePath);
+                    Log.d("File: ", file.getName());
+                    RequestBody reqFile = RequestBody.create(MediaType.parse("image/*"), file);
+                    image = MultipartBody.Part.createFormData("image", file.getName(), reqFile);
                 }
             });
 
-    private void createBook() {
+    private String getRealPathFromURIPath(Uri contentURI) {
+        String[] projection = {MediaStore.Images.Media.DATA};
+        Cursor cursor = getContentResolver().query(contentURI, null, null, null, null);
+        if (cursor == null) {
+            return contentURI.getPath();
+        } else {
+            cursor.moveToFirst();
+            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            return cursor.getString(idx);
+        }
+    }
 
+    private void createBook() {
+        String title = ((EditText) findViewById(R.id.edt_title)).getText().toString();
+        String author = ((EditText) findViewById(R.id.edt_author)).getText().toString();
+        String isbn = ((EditText) findViewById(R.id.edt_isbn)).getText().toString();
+        String publisher = ((EditText) findViewById(R.id.edt_publisher)).getText().toString();
+        String publishedAt = ((EditText) findViewById(R.id.edt_published_at)).getText().toString();
+        String description = ((EditText) findViewById(R.id.edt_description)).getText().toString();
+
+        ArrayList<String> test_val = new ArrayList<>();
+        test_val.add(title);
+        test_val.add(author);
+        test_val.add(isbn);
+        test_val.add(publisher);
+        test_val.add(publishedAt);
+        test_val.add(description);
+
+        Log.d("test_val", test_val.toString());
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date publishedDate = format.parse(publishedAt, new ParsePosition(0));
+
+        Book book = new Book(1, null, null, null, null, null, null, null);
+        book.setTitle(title);
+        book.setAuthor(author);
+        book.setIsbn(isbn);
+        book.setPublisher(publisher);
+        book.setPublished_at(publishedDate);
+        book.setDescription(description);
+//        book.setImage(image);
+
+        RequestBody authorBody = RequestBody.create(MediaType.parse("text/plain"), author);
+        RequestBody titleBody = RequestBody.create(MediaType.parse("text/plain"), title);
+        RequestBody isbnBody = RequestBody.create(MediaType.parse("text/plain"), isbn);
+        RequestBody publisherBody = RequestBody.create(MediaType.parse("text/plain"), publisher);
+        RequestBody publishedAtBody = RequestBody.create(MediaType.parse("text/plain"), publishedAt);
+        RequestBody descriptionBody = RequestBody.create(MediaType.parse("text/plain"), description);
+
+        Call<Book> call = bookInterface.postBook(authorBody, titleBody, isbnBody, publisherBody, publishedAtBody, descriptionBody, image);
+        call.enqueue(new Callback<Book>() {
+            @Override
+            public void onResponse(Call<Book> call, Response<Book> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(AddBookActivity.this, "Data berhasil ditambahkan", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(AddBookActivity.this, "Data gagal ditambahkan", Toast.LENGTH_SHORT).show();
+                    Log.e("Error", response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Book> call, Throwable t) {
+                Toast.makeText(AddBookActivity.this, "Data gagal ditambahkan", Toast.LENGTH_SHORT).show();
+                Log.e("Error", t.getMessage());
+            }
+        });
     }
 }

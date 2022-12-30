@@ -106,7 +106,7 @@ public class HomeActivity extends AppCompatActivity {
         allBooks.enqueue(new Callback<List<Book>>() {
             @Override
             public void onResponse(Call<List<Book>> call, Response<List<Book>> response) {
-                Log.i("Test", response.body().toString());
+                Log.i("Test", response.raw().toString());
                 ArrayList<Book> listBook = (ArrayList<Book>) response.body();
                 adapter = new BookAdapter(listBook);
                 recBook.setAdapter(adapter);
